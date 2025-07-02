@@ -40,6 +40,7 @@ import git
 
 from rdflib import BNode, Graph, Literal
 from rdflib.namespace import OWL, RDF, RDFS, XSD
+from rdflib.util import guess_format
 
 from ttlser import CustomTurtleSerializer
 
@@ -173,10 +174,9 @@ try:
     graph.parse(data=file_content, format=guessed_format)
     
 except Exception as e:
-    print(f"::error ::Failed to parse input ontology file - attempting to parse as Turtle format instead")
-    print(e)
-    
     try:
+        print(f'Input ontology file was not parseable as "{guessed_format}".  Attempting to parse as "turtle" instead.')
+        
         ## Sometimes, such as .owl files, the format can be Turtle, instead of what RDFLIB guesses the format should be
         graph.parse(data=file_content, format='turtle')
     except Exception as e:
