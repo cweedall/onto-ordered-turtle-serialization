@@ -55,7 +55,7 @@ ExitCode = 0
 
 print(f"-- START: create ordered Turtle ontology file --")
 
-#WORKSPACE = git.Repo('.', search_parent_directories=True).working_dir
+WORKSPACE = git.Repo('.', search_parent_directories=True).working_dir
 INPUT_FILE_PARENT_PATH = pathlib.Path(input_filename).parent.resolve()
 GITHUB_RUN_NUMBER = os.getenv('GITHUB_RUN_NUMBER')
 
@@ -72,7 +72,8 @@ ontologyFilePath = pathlib.Path(input_filename)
 orderedOntologyFilename = baseOntologyFilename + '_ordered_turtle' + turtleFileExtension
 orderedOntologyFilePath = f"{INPUT_FILE_PARENT_PATH}/{orderedOntologyFilename}"
 
-print(f"-- input ontology file path:  {pathlib.Path(input_filename).parent.resolve()}  --")
+print(f"-- input ontology file path absolute:  {pathlib.Path(input_filename).parent.resolve()}  --")
+print(f"-- input ontology file path relative??:  {pathlib.Path(input_filename).parent}  --")
 print(f"-- output ontology file path:  {orderedOntologyFilePath} --")
 
 def rename_blank_nodes_to_fix_generated_names(graph, allowed_predicates=[]):
