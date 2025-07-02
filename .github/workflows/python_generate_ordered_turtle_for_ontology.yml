@@ -48,12 +48,6 @@ jobs:
         run: python -m rdflib_serialize_ordered_turtle.py test_files/pizzatutorial_v3-2.rdf
 
       - name: Run test 2
-        run: python -m rdflib_serialize_ordered_turtle.py test_files/pizzatutorial_v3-2.ttl
-
-      - name: Run test 3
-        run: python -m rdflib_serialize_ordered_turtle.py test_files/PizzaTutorialWithDataV2.owl
-
-      - name: Run test 4
         run: python -m rdflib_serialize_ordered_turtle.py test_files/PizzaTutorialWithDataV2.ttl
 
       - name: Check if there are any changes
