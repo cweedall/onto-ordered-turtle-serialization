@@ -1,0 +1,68 @@
+# python_generate_ordered_turtle_for_ontology.yml
+###
+# Description: Workflow to run a Python script which parses and serializes an ontology file as ordered Turtle syntax
+#
+# Author: Christopher Weedall
+# Created: 2025-03-03
+# Modified: 2025-07-02
+# License: GNU General Public License (GPL) v3.0
+# Copyright: 2025 © Christopher Weedall
+###
+
+name: Python CI - Create Ordered Turtle Ontology File 
+
+env:
+  PYTHONUNBUFFERED: "1"
+
+# Controls when the workflow will run
+on:
+  push:
+    # only trigger on branches, not on tags
+    branches:
+      - '**' # includes all branches, except:
+      - '!main'   # excludes main/master branch
+  # allows manual triggering of the workflow
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
+      - name: Add source directory to Python path
+        run: echo "PYTHONPATH=${GITHUB_WORKSPACE}" >> $GITHUB_ENV
+
+      - name: Run tests
+        run: python -m rdflib_serialize_ordered_turtle.py
+
+      - name: Check if there are any changes
+        id: verify_diff
+        run: |
+          git diff --quiet . || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit
+        if: steps.verify_diff.outputs.changed == 'true'
+        run: |
+          git config user.name GitHub Actions
+          git config user.email noreply@github.com
+          git add .
+          git commit -m "Generate ordered Turtle file for easy diff-ing" -a
+
+      - name: Push
+        if: steps.verify_diff.outputs.changed == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
