@@ -147,8 +147,9 @@ def replace_blank_nodes_based_on_predicate_type(graph, allowed_predicates=[]):
 ## Create graph object from RDFLib to parse the ontology .ttl file.
 graph = Graph()
 
+## Read the ontology file.
 try:
-    ## Read the ontology file.
+    
     print(f"Reading input ontology file")
 
     ## Need to read file and normalize line endings (Windows/Linux issue)
@@ -160,12 +161,18 @@ except Exception as e:
     print(e)
     ExitCode = 1
 
+## Parse the ontology file contents into an RDFLIB Graph
 try:
-    ## Parse the ontology file contents into an RDFLIB Graph
+    
     print(f"Parsing input ontology file")
     
+    ## Parse the ontology file contents into an RDFLIB Graph
+    guessed_format = guess_format(input_filename)
+    
+    print(f'Input ontology file has "{pathlib.Path(input_filename).suffix}" file extension and attempt to parse as a "{guessed_format}" format')
+    
     ## Specify the format based on the filename/file extension
-    graph.parse(data=file_content, format=f'{guess_format(input_filename)}')
+    graph.parse(data=file_content, format=guessed_format)
     
 except Exception as e:
     try:
@@ -188,9 +195,9 @@ graph.bind('rdfs', RDFS)
 graph.bind('owl', OWL)
 graph.bind('xsd', XSD)
 
+## Remove all blank nodes from the parsed ontology.
+## These blank nodes always have randomly generated ID labels which differ each time.
 try:
-    ## Remove all blank nodes from the parsed ontology.
-    ## These blank nodes always have randomly generated ID labels which differ each time.
     print(f"Removing/renaming blank nodes")
     
     ## The order of these predicts is sorted by "deepness" and should not be altered.
@@ -211,10 +218,11 @@ except Exception as e:
     print(f"::error ::Failed to remove/rename blank nodes")
     print(e)
     ExitCode = 1
-    
+
+## Output the ordered ontology in Turtle syntax.
 try:
-    ## Output the ordered ontology in Turtle syntax.
     print(f"Writing serialized ontology with ordered Turtle")
+    
     with open(f"{orderedOntologyFilePath}", 'wb') as fp:
         serializer.serialize(fp)
     
