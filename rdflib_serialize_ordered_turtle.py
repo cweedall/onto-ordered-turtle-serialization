@@ -64,7 +64,8 @@ turtleFileExtension = pathlib.Path(input_filename).suffix
 baseOntologyFilename = pathlib.Path(input_filename).stem
 
 ## Core ontology filename and path
-ontologyFilename = baseOntologyFilename + turtleFileExtension
+#ontologyFilename = baseOntologyFilename + turtleFileExtension
+ontologyFilename = input_filename
 ontologyFilePath = f"{WORKSPACE}/{ontologyFilename}"
 
 ## Ordered Turtle ontology filename and path
