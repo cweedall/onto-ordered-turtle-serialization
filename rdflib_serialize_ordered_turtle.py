@@ -157,7 +157,8 @@ try:
     with open(f"{ontologyFilePath}", 'r', encoding='utf-8') as file:
        file_content = file.read()
     file_content = normalize_line_endings(file_content)
-    graph.parse(data=file_content, format='turtle')
+    #graph.parse(data=file_content, format='turtle')
+    graph.parse(data=file_content)
     
     ## Bind the namespaces
     ontology_namespace = ''
