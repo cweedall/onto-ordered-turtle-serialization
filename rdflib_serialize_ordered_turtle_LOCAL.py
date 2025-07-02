@@ -38,6 +38,7 @@ import sys
 
 from rdflib import BNode, Graph, Literal
 from rdflib.namespace import OWL, RDF, RDFS, XSD
+from rdflib.util import guess_format
 
 from ttlser import CustomTurtleSerializer
 
@@ -57,16 +58,15 @@ print(f"-- START: create ordered Turtle ontology file --")
 WORKSPACE = pathlib.Path(input_filename).parent
 
 ## Turtle file extension
-turtleFileExtension = pathlib.Path(input_filename).suffix
+turtleFileExtension = '.ttl'
 
-## Base filename for the core ontology
+## Base filename for the ontology
 baseOntologyFilename = pathlib.Path(input_filename).stem
 
-## Core ontology filename and path
-ontologyFilename = baseOntologyFilename + turtleFileExtension
-ontologyFilePath = f"{WORKSPACE}/{ontologyFilename}"
+## Input Ontology filename and path
+ontologyFilePath = pathlib.Path(input_filename)
 
-## Ordered Turtle ontology filename and path
+## Output Ordered Turtle ontology filename and path
 orderedOntologyFilename = baseOntologyFilename + '_ordered_turtle' + turtleFileExtension
 orderedOntologyFilePath = f"{WORKSPACE}/{orderedOntologyFilename}"
 
@@ -144,33 +144,54 @@ def replace_blank_nodes_based_on_predicate_type(graph, allowed_predicates=[]):
     
     return newgraph
 
-try:
-    ## Create graph object from RDFLib to parse the ontology .ttl file.
-    graph = Graph()
+## Create graph object from RDFLib to parse the ontology .ttl file.
+graph = Graph()
 
-    ## Read/parse the core ontology file.
-    print(f"Reading ontology file")
-    #graph.parse(f"{ontologyFilePath}", format='turtle')
+## Read the ontology file.
+try:
+    print(f"Reading input ontology file")
+
     ## Need to read file and normalize line endings (Windows/Linux issue)
     with open(f"{ontologyFilePath}", 'r', encoding='utf-8') as file:
        file_content = file.read()
     file_content = normalize_line_endings(file_content)
-    graph.parse(data=file_content, format='turtle')
-    
-    ## Bind the namespaces
-    ontology_namespace = ''
-    for prefix, namespace_uri in graph.namespace_manager.namespaces():
-        if prefix == '':
-            ontology_namespace = namespace_uri
-    
-    graph.bind('', ontology_namespace)
-    graph.bind('rdf', RDF)
-    graph.bind('rdfs', RDFS)
-    graph.bind('owl', OWL)
-    graph.bind('xsd', XSD)
+except Exception as e:
+    print(f"::error ::Failed to read input ontology file")
+    print(e)
+    ExitCode = 1
 
-    ## Remove all blank nodes from the parsed ontology.
-    ## These blank nodes always have randomly generated ID labels which differ each time.
+## Parse the ontology file contents into an RDFLIB Graph
+try:
+    print(f"Parsing input ontology file")
+    
+    ## Parse the ontology file contents into an RDFLIB Graph
+    guessed_format = guess_format(input_filename)
+    
+    print(f'Input ontology file has "{pathlib.Path(input_filename).suffix}" file extension and attempt to parse as a "{guessed_format}" format')
+    
+    ## Specify the format based on the filename/file extension
+    graph.parse(data=file_content, format=f'{guessed_format}')
+    
+except Exception as e:
+    print(f"::error ::Failed to parse input ontology file")
+    print(e)
+    ExitCode = 1
+
+## Bind the namespaces
+ontology_namespace = ''
+for prefix, namespace_uri in graph.namespace_manager.namespaces():
+    if prefix == '':
+        ontology_namespace = namespace_uri
+
+graph.bind('', ontology_namespace)
+graph.bind('rdf', RDF)
+graph.bind('rdfs', RDFS)
+graph.bind('owl', OWL)
+graph.bind('xsd', XSD)
+
+## Remove all blank nodes from the parsed ontology.
+## These blank nodes always have randomly generated ID labels which differ each time.
+try:
     print(f"Removing/renaming blank nodes")
     
     ## The order of these predicts is sorted by "deepness" and should not be altered.
@@ -187,8 +208,15 @@ try:
     serializer = CustomTurtleSerializer(newgraph)
     #serializer = CustomTurtleSerializer(graph)
 
-    ## Output the ordered ontology in Turtle syntax.
+except Exception as e:
+    print(f"::error ::Failed to remove/rename blank nodes")
+    print(e)
+    ExitCode = 1
+
+## Output the ordered ontology in Turtle syntax.
+try:
     print(f"Writing serialized ontology with ordered Turtle")
+    
     with open(f"{orderedOntologyFilePath}", 'wb') as fp:
         serializer.serialize(fp)
     
