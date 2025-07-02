@@ -72,6 +72,9 @@ ontologyFilePath = pathlib.Path(input_filename)
 orderedOntologyFilename = baseOntologyFilename + '_ordered_turtle' + turtleFileExtension
 orderedOntologyFilePath = f"{INPUT_FILE_PARENT_PATH}/{orderedOntologyFilename}"
 
+print(f"-- input ontology file path:  {pathlib.Path(input_filename).parent.resolve()}  --")
+print(f"-- output ontology file path:  {orderedOntologyFilePath} --")
+
 def rename_blank_nodes_to_fix_generated_names(graph, allowed_predicates=[]):
     newgraph = graph
     
