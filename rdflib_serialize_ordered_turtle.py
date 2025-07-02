@@ -149,7 +149,6 @@ graph = Graph()
 
 ## Read the ontology file.
 try:
-    
     print(f"Reading input ontology file")
 
     ## Need to read file and normalize line endings (Windows/Linux issue)
@@ -163,7 +162,6 @@ except Exception as e:
 
 ## Parse the ontology file contents into an RDFLIB Graph
 try:
-    
     print(f"Parsing input ontology file")
     
     ## Parse the ontology file contents into an RDFLIB Graph
@@ -175,6 +173,9 @@ try:
     graph.parse(data=file_content, format=guessed_format)
     
 except Exception as e:
+    print(f"::error ::Failed to parse input ontology file - attempting to parse as Turtle format instead")
+    print(e)
+    
     try:
         ## Sometimes, such as .owl files, the format can be Turtle, instead of what RDFLIB guesses the format should be
         graph.parse(data=file_content, format='turtle')
