@@ -154,7 +154,7 @@ try:
     print(f'Input ontology file has "{pathlib.Path(input_filename).suffix}" file extension and attempt to parse as a "{guessed_format}" format')
     
     ## Specify the format based on the filename/file extension
-    graph.parse(data=file_content, format=guessed_format)
+    graph.parse(data=ontologyFilePath, format=guessed_format)
     
 except Exception as e:
     print(f"::error ::Failed to parse input ontology file")
