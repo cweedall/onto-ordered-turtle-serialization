@@ -70,7 +70,7 @@ ontologyFilePath = pathlib.Path(input_filename)
 
 ## Output Ordered Turtle ontology filename and path
 orderedOntologyFilename = baseOntologyFilename + '_ordered_turtle' + turtleFileExtension
-orderedOntologyFilePath = f"{WORKSPACE}{os.sep}{os.sep + str(pathlib.Path(input_filename).parent) if pathlib.Path(input_filename).parent else '' }{orderedOntologyFilename}"
+orderedOntologyFilePath = f"{WORKSPACE}{os.sep}{str(pathlib.Path(input_filename).parent) + os.sep if pathlib.Path(input_filename).parent else '' }{orderedOntologyFilename}"
 
 print(f"-- input ontology file path absolute:  {pathlib.Path(input_filename).parent.resolve()}  --")
 print(f"-- input ontology file path relative??:  {pathlib.Path(input_filename).parent}  --")
