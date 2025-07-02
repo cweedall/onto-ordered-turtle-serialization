@@ -58,17 +58,15 @@ WORKSPACE = git.Repo('.', search_parent_directories=True).working_dir
 GITHUB_RUN_NUMBER = os.getenv('GITHUB_RUN_NUMBER')
 
 ## Turtle file extension
-turtleFileExtension = pathlib.Path(input_filename).suffix
+turtleFileExtension = '.ttl'
 
-## Base filename for the core ontology
+## Base filename for the ontology
 baseOntologyFilename = pathlib.Path(input_filename).stem
 
-## Core ontology filename and path
-#ontologyFilename = baseOntologyFilename + turtleFileExtension
-ontologyFilename = input_filename
-ontologyFilePath = f"{WORKSPACE}/{ontologyFilename}"
+## Input Ontology filename and path
+ontologyFilePath = pathlib.Path(input_filename)
 
-## Ordered Turtle ontology filename and path
+## Output Ordered Turtle ontology filename and path
 orderedOntologyFilename = baseOntologyFilename + '_ordered_turtle' + turtleFileExtension
 orderedOntologyFilePath = f"{WORKSPACE}/{orderedOntologyFilename}"
 
@@ -146,32 +144,51 @@ def replace_blank_nodes_based_on_predicate_type(graph, allowed_predicates=[]):
     
     return newgraph
 
-try:
-    ## Create graph object from RDFLib to parse the ontology .ttl file.
-    graph = Graph()
+## Create graph object from RDFLib to parse the ontology .ttl file.
+graph = Graph()
 
-    ## Read/parse the core ontology file.
-    print(f"Reading ontology file")
-    #graph.parse(f"{ontologyFilePath}", format='turtle')
+try:
+    ## Read the ontology file.
+    print(f"Reading input ontology file")
+
     ## Need to read file and normalize line endings (Windows/Linux issue)
     with open(f"{ontologyFilePath}", 'r', encoding='utf-8') as file:
        file_content = file.read()
     file_content = normalize_line_endings(file_content)
-    #graph.parse(data=file_content, format='turtle')
-    graph.parse(data=file_content)
-    
-    ## Bind the namespaces
-    ontology_namespace = ''
-    for prefix, namespace_uri in graph.namespace_manager.namespaces():
-        if prefix == '':
-            ontology_namespace = namespace_uri
-    
-    graph.bind('', ontology_namespace)
-    graph.bind('rdf', RDF)
-    graph.bind('rdfs', RDFS)
-    graph.bind('owl', OWL)
-    graph.bind('xsd', XSD)
+except Exception as e:
+    print(f"::error ::Failed to read input ontology file")
+    print(e)
+    ExitCode = 1
 
+try:
+    ## Parse the ontology file contents into an RDFLIB Graph
+    print(f"Parsing input ontology file")
+    
+    ## Specify the format based on the filename/file extension
+    graph.parse(data=file_content, format=f'{guess_format(input_filename)}')
+    
+except Exception as e:
+    try:
+        ## Sometimes, such as .owl files, the format can be Turtle, instead of what RDFLIB guesses the format should be
+        graph.parse(data=file_content, format='turtle')
+    except Exception as e:
+        print(f"::error ::Failed to parse input ontology file")
+        print(e)
+        ExitCode = 1
+
+## Bind the namespaces
+ontology_namespace = ''
+for prefix, namespace_uri in graph.namespace_manager.namespaces():
+    if prefix == '':
+        ontology_namespace = namespace_uri
+
+graph.bind('', ontology_namespace)
+graph.bind('rdf', RDF)
+graph.bind('rdfs', RDFS)
+graph.bind('owl', OWL)
+graph.bind('xsd', XSD)
+
+try:
     ## Remove all blank nodes from the parsed ontology.
     ## These blank nodes always have randomly generated ID labels which differ each time.
     print(f"Removing/renaming blank nodes")
@@ -190,6 +207,12 @@ try:
     serializer = CustomTurtleSerializer(newgraph)
     #serializer = CustomTurtleSerializer(graph)
 
+except Exception as e:
+    print(f"::error ::Failed to remove/rename blank nodes")
+    print(e)
+    ExitCode = 1
+    
+try:
     ## Output the ordered ontology in Turtle syntax.
     print(f"Writing serialized ontology with ordered Turtle")
     with open(f"{orderedOntologyFilePath}", 'wb') as fp:
