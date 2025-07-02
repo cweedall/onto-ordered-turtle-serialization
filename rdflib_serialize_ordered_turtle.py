@@ -71,10 +71,6 @@ ontologyFilePath = pathlib.Path(input_filename)
 orderedOntologyFilename = baseOntologyFilename + '_ordered_turtle' + turtleFileExtension
 orderedOntologyFilePath = f"{WORKSPACE}/{orderedOntologyFilename}"
 
-## NEED THIS FOR THE LOCAL SCRIPT (BUT NOT FOR THE GITHUB VERSION)
-def normalize_line_endings(text):
-  return text.replace('\r\n', '\n').replace('\r', '\n')
-
 def rename_blank_nodes_to_fix_generated_names(graph, allowed_predicates=[]):
     newgraph = graph
     
@@ -148,19 +144,6 @@ def replace_blank_nodes_based_on_predicate_type(graph, allowed_predicates=[]):
 ## Create graph object from RDFLib to parse the ontology .ttl file.
 graph = Graph()
 
-## Read the ontology file.
-try:
-    print(f"Reading input ontology file")
-
-    ## Need to read file and normalize line endings (Windows/Linux issue)
-    with open(f"{ontologyFilePath}", 'r', encoding='utf-8') as file:
-       file_content = file.read()
-    file_content = normalize_line_endings(file_content)
-except Exception as e:
-    print(f"::error ::Failed to read input ontology file")
-    print(e)
-    ExitCode = 1
-
 ## Parse the ontology file contents into an RDFLIB Graph
 try:
     print(f"Parsing input ontology file")
@@ -174,15 +157,9 @@ try:
     graph.parse(data=file_content, format=guessed_format)
     
 except Exception as e:
-    try:
-        print(f'Input ontology file was not parseable as "{guessed_format}".  Attempting to parse as "turtle" instead.')
-        
-        ## Sometimes, such as .owl files, the format can be Turtle, instead of what RDFLIB guesses the format should be
-        graph.parse(data=file_content, format='turtle')
-    except Exception as e:
-        print(f"::error ::Failed to parse input ontology file")
-        print(e)
-        ExitCode = 1
+    print(f"::error ::Failed to parse input ontology file")
+    print(e)
+    ExitCode = 1
 
 ## Bind the namespaces
 ontology_namespace = ''
