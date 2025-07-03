@@ -54,7 +54,7 @@ jobs:
       - name: Check if there are any changes
         id: verify_diff
         run: |
-          { git diff --quiet . & if [ -z "$(git ls-files . --exclude-standard --others)" ]; then exit 1 fi; } || echo "changed=true" >> $GITHUB_OUTPUT
+          { git diff --quiet . & if [ -z "$(git ls-files . --exclude-standard --others)" ]; then exit 1; fi; } || echo "changed=true" >> $GITHUB_OUTPUT
 
       - name: Commit
         if: steps.verify_diff.outputs.changed == 'true'
