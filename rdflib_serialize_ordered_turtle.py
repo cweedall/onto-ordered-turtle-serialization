@@ -214,6 +214,11 @@ except Exception as e:
     print(e)
     ExitCode = 1
 
+if pathlib.Path(orderedOntologyFilePath).exists():
+    print(f"The file '{orderedOntologyFilePath}' exists.")
+else:
+    print(f"The file '{orderedOntologyFilePath}' does not exist.")
+
 print(f"-- END: create ordered Turtle ontology file --")
 
 sys.exit(ExitCode)
