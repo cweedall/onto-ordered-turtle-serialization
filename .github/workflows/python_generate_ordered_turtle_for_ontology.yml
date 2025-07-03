@@ -24,6 +24,11 @@ on:
   # allows manual triggering of the workflow
   workflow_dispatch:
 
+# Allow this action permission to write to the contents of the repository.
+# See: https://docs.github.com/en/actions/how-tos/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
