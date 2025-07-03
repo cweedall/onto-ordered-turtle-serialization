@@ -54,6 +54,8 @@ jobs:
         id: verify_diff
         run: |
           git diff --quiet . || echo "changed=true" >> $GITHUB_OUTPUT
+          git diff .
+          echo $GITHUB_OUTPUT
 
       - name: Commit
         if: steps.verify_diff.outputs.changed == 'true'
