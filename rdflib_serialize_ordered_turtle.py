@@ -72,10 +72,6 @@ ontologyFilePath = pathlib.Path(input_filename)
 orderedOntologyFilename = baseOntologyFilename + '_ordered_turtle' + turtleFileExtension
 orderedOntologyFilePath = f"{WORKSPACE}{os.sep}{str(pathlib.Path(input_filename).parent) + os.sep if pathlib.Path(input_filename).parent else '' }{orderedOntologyFilename}"
 
-print(f"-- input ontology file path absolute:  {pathlib.Path(input_filename).parent.resolve()}  --")
-print(f"-- input ontology file path relative??:  {pathlib.Path(input_filename).parent}  --")
-print(f"-- output ontology file path:  {orderedOntologyFilePath} --")
-
 def rename_blank_nodes_to_fix_generated_names(graph, allowed_predicates=[]):
     newgraph = graph
     
@@ -117,7 +113,6 @@ def replace_blank_nodes_based_on_predicate_type(graph, allowed_predicates=[]):
                 ## Get restriction(?) details to set blank node name
                 blank_node_naming_details = blank_node_type + blank_node_onProperty_name + blank_node_restriction_type_name
                 
-                #bn = BNode('!!@@=====@@!!')
                 bn = BNode()
                 if orig_pred == RDFS.subClassOf:
                     bn = BNode(orig_subj + orig_pred + blank_node_naming_details)
@@ -195,7 +190,6 @@ try:
     ## Use the extenion to order the graph data.
     print(f"Creating serializing for ordered Turtle")
     serializer = CustomTurtleSerializer(newgraph)
-    #serializer = CustomTurtleSerializer(graph)
 
 except Exception as e:
     print(f"::error ::Failed to remove/rename blank nodes")
@@ -213,11 +207,6 @@ except Exception as e:
     print(f"::error ::Failed to create ordered Turtle file")
     print(e)
     ExitCode = 1
-
-if pathlib.Path(orderedOntologyFilePath).exists():
-    print(f"The file '{orderedOntologyFilePath}' exists.")
-else:
-    print(f"The file '{orderedOntologyFilePath}' does not exist.")
 
 print(f"-- END: create ordered Turtle ontology file --")
 
