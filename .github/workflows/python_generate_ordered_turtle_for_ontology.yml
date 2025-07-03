@@ -27,6 +27,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -34,7 +35,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.12'
 
       - name: Install dependencies
         run: |
@@ -44,18 +45,16 @@ jobs:
       - name: Add source directory to Python path
         run: echo "PYTHONPATH=${GITHUB_WORKSPACE}" >> $GITHUB_ENV
 
-      - name: Run test 1
+      - name: Generate ordered Turtle - File 1
         run: python -m rdflib_serialize_ordered_turtle.py test_files/pizzatutorial_v3-2.rdf
 
-      - name: Run test 2
+      - name: Generate ordered Turtle - File 2
         run: python -m rdflib_serialize_ordered_turtle.py test_files/PizzaTutorialWithDataV2.ttl
 
       - name: Check if there are any changes
         id: verify_diff
         run: |
           git diff --quiet . || echo "changed=true" >> $GITHUB_OUTPUT
-          git diff .
-          echo $GITHUB_OUTPUT
 
       - name: Commit
         if: steps.verify_diff.outputs.changed == 'true'
